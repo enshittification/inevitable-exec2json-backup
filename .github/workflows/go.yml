@@ -8,7 +8,7 @@ on:
 
 jobs:
 
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -24,10 +24,10 @@ jobs:
       with:
         go-version: ${{ matrix.go-version }}
 
-    - name: Build
-      run: go build -v ./...
+    - name: Build main executable
+      run: go build -o main .
 
-    - name: Go Test
+    - name: Run Go tests
       run: go test -v ./...
 
     - name: Install jq
