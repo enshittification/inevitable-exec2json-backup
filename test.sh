@@ -3,7 +3,7 @@
 set -e
 
 # Check if main executable exists
-if [ ! -f "./main" ]; then
+if [ ! -f "./exec2json" ]; then
     echo "Error: main executable not found. Make sure to build it before running tests."
     exit 1
 fi
@@ -17,7 +17,7 @@ run_test() {
     local expected_status="$5"
 
     echo "Running test: $test_name"
-    output=$(./main $command | jq -r '.')
+    output=$(./exec2json $command | jq -r '.')
     
     actual_stdout=$(echo "$output" | jq -r '.stdout' | tr -d '\n')
     actual_stderr=$(echo "$output" | jq -r '.stderr' | tr -d '\n')
