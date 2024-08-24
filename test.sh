@@ -24,6 +24,10 @@ run_test() {
     actual_status=$(echo "$output" | jq -r '.status')
     actual_command=$(echo "$output" | jq -r '.command | join(" ")')
 
+    # Remove surrounding quotes if present
+    actual_stdout="${actual_stdout#\'}"
+    actual_stdout="${actual_stdout%\'}"
+
     if [ "$actual_stdout" != "$expected_stdout" ] || 
        [ "$actual_stderr" != "$expected_stderr" ] || 
        [ "$actual_status" != "$expected_status" ] ||
