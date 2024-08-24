@@ -2,9 +2,9 @@
 
 set -e
 
-# Check if main executable exists
+# Check if exec2json executable exists
 if [ ! -f "./exec2json" ]; then
-    echo "Error: main executable not found. Make sure to build it before running tests."
+    echo "Error: exec2json executable not found. Make sure to build it before running tests."
     exit 1
 fi
 
