@@ -27,63 +27,59 @@ import (
 	"time"
 )
 
-func main() {
-	if len(os.Args) < 2 {
+func executeCommand(args []string) (map[string]interface{}, int) {
+	if len(args) < 1 {
 		log.Fatal("You must supply a command to execute")
 	}
-	command := exec.Command(os.Args[1], os.Args[2:]...)
-
+	command := exec.Command(args[0], args[1:]...)
 	stdin, err := command.StdinPipe()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
-
 	stderr, err := command.StderrPipe()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
-
 	stdout, err := command.StdoutPipe()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
-
 	startTime := time.Now()
-
 	go func() {
 		defer stdin.Close()
 		io.Copy(stdin, os.Stdin)
 	}()
-
 	err = command.Start()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
-
 	outString, err := io.ReadAll(stdout)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	errString, err := io.ReadAll(stderr)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
-
 	if err := command.Wait(); err != nil {
 		var exitError *exec.ExitError
 		if !errors.As(err, &exitError) {
-			panic(err)
+			log.Fatal(err)
 		}
 	}
 	took := time.Now().Sub(startTime).Seconds()
-
-	json.NewEncoder(os.Stdout).Encode(map[string]interface{}{
-		"command": os.Args[1:],
+	result := map[string]interface{}{
+		"command": args,
 		"stdout":  string(outString),
 		"stderr":  string(errString),
 		"status":  command.ProcessState.ExitCode(),
 		"took":    took,
-	})
+	}
+	return result, command.ProcessState.ExitCode()
+}
 
-	os.Exit(command.ProcessState.ExitCode())
+func main() {
+	result, exitCode := executeCommand(os.Args[1:])
+	json.NewEncoder(os.Stdout).Encode(result)
+	os.Exit(exitCode)
 }
