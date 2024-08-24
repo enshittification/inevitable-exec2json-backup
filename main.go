@@ -19,30 +19,29 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io"
-	"log"
 	"os"
 	"os/exec"
 	"time"
 )
 
-func executeCommand(args []string) (map[string]interface{}, int) {
+func executeCommand(args []string) (map[string]interface{}, error) {
 	if len(args) < 1 {
-		log.Fatal("You must supply a command to execute")
+		return nil, fmt.Errorf("you must supply a command to execute")
 	}
 	command := exec.Command(args[0], args[1:]...)
 	stdin, err := command.StdinPipe()
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("failed to create stdin pipe: %w", err)
 	}
 	stderr, err := command.StderrPipe()
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("failed to create stderr pipe: %w", err)
 	}
 	stdout, err := command.StdoutPipe()
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("failed to create stdout pipe: %w", err)
 	}
 	startTime := time.Now()
 	go func() {
@@ -51,22 +50,17 @@ func executeCommand(args []string) (map[string]interface{}, int) {
 	}()
 	err = command.Start()
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("failed to start command: %w", err)
 	}
 	outString, err := io.ReadAll(stdout)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("failed to read stdout: %w", err)
 	}
 	errString, err := io.ReadAll(stderr)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("failed to read stderr: %w", err)
 	}
-	if err := command.Wait(); err != nil {
-		var exitError *exec.ExitError
-		if !errors.As(err, &exitError) {
-			log.Fatal(err)
-		}
-	}
+	err = command.Wait()
 	took := time.Now().Sub(startTime).Seconds()
 	result := map[string]interface{}{
 		"command": args,
@@ -75,11 +69,15 @@ func executeCommand(args []string) (map[string]interface{}, int) {
 		"status":  command.ProcessState.ExitCode(),
 		"took":    took,
 	}
-	return result, command.ProcessState.ExitCode()
+	return result, err
 }
 
 func main() {
-	result, exitCode := executeCommand(os.Args[1:])
+	result, err := executeCommand(os.Args[1:])
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
 	json.NewEncoder(os.Stdout).Encode(result)
-	os.Exit(exitCode)
+	os.Exit(result["status"].(int))
 }
