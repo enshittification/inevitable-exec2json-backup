@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -e -x
 
 # Check if exec2json executable exists
 if [ ! -f "./exec2json" ]; then
