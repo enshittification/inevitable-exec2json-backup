@@ -32,3 +32,8 @@ jobs:
 
     - name: Test
       run: go test -v ./...
+
+    - name: Run acceptance tests
+      run: |
+        chmod +x test.sh
+        ./test.sh
