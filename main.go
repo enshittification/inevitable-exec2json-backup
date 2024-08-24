@@ -26,7 +26,16 @@ import (
 	"time"
 )
 
-func executeCommand(args []string) (map[string]interface{}, error) {
+// CommandResult represents the result of executing a command
+type CommandResult struct {
+	Command []string  `json:"command"`
+	Stdout  string    `json:"stdout"`
+	Stderr  string    `json:"stderr"`
+	Status  int       `json:"status"`
+	Took    float64   `json:"took"`
+}
+
+func executeCommand(args []string) (*CommandResult, error) {
 	if len(args) < 1 {
 		return nil, fmt.Errorf("you must supply a command to execute")
 	}
@@ -62,12 +71,12 @@ func executeCommand(args []string) (map[string]interface{}, error) {
 	}
 	err = command.Wait()
 	took := time.Now().Sub(startTime).Seconds()
-	result := map[string]interface{}{
-		"command": args,
-		"stdout":  string(outString),
-		"stderr":  string(errString),
-		"status":  command.ProcessState.ExitCode(),
-		"took":    took,
+	result := &CommandResult{
+		Command: args,
+		Stdout:  string(outString),
+		Stderr:  string(errString),
+		Status:  command.ProcessState.ExitCode(),
+		Took:    took,
 	}
 	return result, err
 }
@@ -79,5 +88,5 @@ func main() {
 		os.Exit(1)
 	}
 	json.NewEncoder(os.Stdout).Encode(result)
-	os.Exit(result["status"].(int))
+	os.Exit(result.Status)
 }
