@@ -8,7 +8,7 @@ on:
 
 jobs:
 
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -24,27 +24,8 @@ jobs:
       with:
         go-version: ${{ matrix.go-version }}
 
-    - name: Display Go environment
-      run: |
-        go env
-        pwd
-        ls -R
-
     - name: Build all packages
       run: go build -v ./...
-
-    - name: List built artifacts
-      run: |
-        ls -l
-        find . -type f -executable
-
-    - name: Build main executable explicitly
-      run: |
-        go build -v -o main .
-        if [ ! -f "./main" ]; then
-          echo "Failed to build main executable"
-          exit 1
-        fi
 
     - name: Run Go tests
       run: go test -v ./...
