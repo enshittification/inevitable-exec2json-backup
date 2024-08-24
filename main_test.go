@@ -42,24 +42,24 @@ func TestExecuteCommand(t *testing.T) {
 			}
 
 			if result != nil {
-				if status, ok := result["status"].(int); !ok || status != tc.expectedStatus {
-					t.Errorf("Expected status %d, got %v", tc.expectedStatus, result["status"])
+				if result.Status != tc.expectedStatus {
+					t.Errorf("Expected status %d, got %d", tc.expectedStatus, result.Status)
 				}
 
-				if stdout, ok := result["stdout"].(string); !ok || stdout != tc.expectedStdout {
-					t.Errorf("Expected stdout %q, got %q", tc.expectedStdout, stdout)
+				if result.Stdout != tc.expectedStdout {
+					t.Errorf("Expected stdout %q, got %q", tc.expectedStdout, result.Stdout)
 				}
 
-				if stderr, ok := result["stderr"].(string); !ok || stderr != tc.expectedStderr {
-					t.Errorf("Expected stderr %q, got %q", tc.expectedStderr, stderr)
+				if result.Stderr != tc.expectedStderr {
+					t.Errorf("Expected stderr %q, got %q", tc.expectedStderr, result.Stderr)
 				}
 
-				if _, ok := result["took"].(float64); !ok {
-					t.Errorf("Expected 'took' to be a float64, got %T", result["took"])
+				if result.Took <= 0 {
+					t.Errorf("Expected 'took' to be greater than 0, got %f", result.Took)
 				}
 
-				if command, ok := result["command"].([]string); !ok || len(command) != len(tc.args) {
-					t.Errorf("Expected command %v, got %v", tc.args, command)
+				if len(result.Command) != len(tc.args) {
+					t.Errorf("Expected command %v, got %v", tc.args, result.Command)
 				}
 			} else if !tc.expectError {
 				t.Errorf("Expected a result, but got nil")
