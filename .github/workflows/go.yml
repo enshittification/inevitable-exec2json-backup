@@ -30,9 +30,6 @@ jobs:
     - name: Run Go tests
       run: go test -v ./...
 
-    - name: Install jq
-      run: sudo apt-get install jq
-
     - name: Run bash tests
       run: |
         chmod +x test.sh
